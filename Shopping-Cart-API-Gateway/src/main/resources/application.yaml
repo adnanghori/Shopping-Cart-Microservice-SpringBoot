@@ -1,0 +1,47 @@
+server:
+  port: 9090
+
+spring:
+  application:
+    name: API-GATEWAY
+  config:
+    import: configserver:http://localhost:9292
+  cloud:
+    gateway:
+      routes:
+        - id : Order-Service
+          uri: lb://Order-Service
+          predicates:
+            - Path=/order/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: Order-Service
+                fallbackuri: forward:/orderServiceFallBack
+        - id: Payment-Service
+          uri: lb://Payment-Service
+          predicates:
+            - Path=/payment/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: Payment-Service
+                fallbackuri: forward:/paymentServiceFallBack
+
+        - id: Product-Service
+          uri: lb://Product-Service
+          predicates:
+            - Path=/product/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: Product-Service
+                fallbackuri: forward:/productServiceFallBack
+
+okta:
+  oauth2:
+    issuer: # Enter Issuer from okta
+    audience: #Enter Audience from okta
+    client-id: # Enter Client id from okta
+    client-secret: # Enter Client Secret from okta
+    scopes: openid, profile, email, offline_access
